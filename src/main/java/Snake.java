@@ -30,4 +30,17 @@ public class Snake {
         return body;
     }
 
+    public void move(){
+        Point head = body.getFirst();
+        Point newHead = new Point(head.getX() + 1, head.getY());
+        body.addFirst(newHead);
+        body.removeLast();
+    }
+
+    public boolean hitWall(int gridSize){
+        Point head = body.getFirst();
+
+        return head.getX() < 0 || head.getX() >= gridSize || head.getY() < 0 || head.getY() >= gridSize;
+    }
+
 }
