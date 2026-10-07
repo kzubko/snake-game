@@ -46,7 +46,17 @@ public class Snake {
         return body;
     }
 
-    public void move(){
+    public void move(boolean grow){
+
+        Point newHead = getNextHead();
+        body.addFirst(newHead);
+
+        if (!grow) {
+            body.removeLast();
+        }
+    }
+
+    public Point getNextHead() {
         Point head = body.getFirst();
 
         int newX = head.getX();
@@ -54,22 +64,20 @@ public class Snake {
 
         switch(direction){
             case RIGHT:
-                newX += 1;
+                newX++;
                 break;
             case LEFT:
-                newX -= 1;
+                newX--;
                 break;
             case DOWN:
-                newY += 1;
+                newY++;
                 break;
             case UP:
-                newY -= 1;
+                newY--;
                 break;
         }
 
-        Point newHead = new Point(newX, newY);
-        body.addFirst(newHead);
-        body.removeLast();
+        return new Point(newX, newY);
     }
 
     public boolean hitWall(int gridSize){

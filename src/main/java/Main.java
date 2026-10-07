@@ -23,6 +23,7 @@ public class Main extends Application {
     private Canvas canvas;
     private GraphicsContext gc;
     private Timeline timeline;
+    private Food food;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -33,7 +34,46 @@ public class Main extends Application {
 
         canvas = new Canvas(SIZE, SIZE);
         gc = canvas.getGraphicsContext2D();
+        food = new Food();
+        food.generatePosition(GRID_SIZE, snake.getBody());
 
+
+        Scene scene = getScene();
+
+        stage.setScene(scene);
+
+        drawGame();
+
+
+        timeline = new Timeline(
+                new KeyFrame(Duration.millis(200), event -> {
+
+                    Point nextHead = snake.getNextHead();
+                    Point foodPos = food.getPosition();
+
+                    boolean eatsFood = nextHead.getX() == foodPos.getX() && nextHead.getY() == foodPos.getY();
+
+                    snake.move(eatsFood);
+
+                    if (eatsFood) {
+                        food.generatePosition(GRID_SIZE, snake.getBody());
+                    }
+
+                    if (snake.hitWall(GRID_SIZE)){
+                        timeline.stop();
+                        gameOver();
+                    } else {
+                        drawGame();
+                    }
+                })
+        );
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+
+        stage.show();
+    }
+
+    private Scene getScene() {
         StackPane root = new StackPane(canvas);
         Scene scene = new Scene(root);
 
@@ -53,28 +93,7 @@ public class Main extends Application {
                     break;
             }
         });
-
-        stage.setScene(scene);
-
-        drawGame();
-
-
-        timeline = new Timeline(
-                new KeyFrame(Duration.millis(200), event -> {
-                    snake.move();
-
-                    if (snake.hitWall(GRID_SIZE)){
-                        timeline.stop();
-                        gameOver();
-                    } else {
-                        drawGame();
-                    }
-                })
-        );
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
-
-        stage.show();
+        return scene;
     }
 
     public void drawGame () {
@@ -110,6 +129,17 @@ public class Main extends Application {
             }
 
         }
+
+        Point foodPos = food.getPosition();
+        gc.setFill(Color.GREEN);
+
+        int x = foodPos.getX() * CELL_SIZE;
+        int y = foodPos.getY() * CELL_SIZE;
+
+        gc.fillOval(x + SNAKE_PADDING,
+                y + SNAKE_PADDING,
+                CELL_SIZE - SNAKE_PADDING * 2,
+                CELL_SIZE - SNAKE_PADDING * 2);
 
     }
 
