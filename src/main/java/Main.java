@@ -37,6 +37,23 @@ public class Main extends Application {
         StackPane root = new StackPane(canvas);
         Scene scene = new Scene(root);
 
+        scene.setOnKeyPressed(event -> {
+            switch (event.getCode()) {
+                case UP, W:
+                    snake.setDirection(Direction.UP);
+                    break;
+                case DOWN, S:
+                    snake.setDirection(Direction.DOWN);
+                    break;
+                case LEFT, A:
+                    snake.setDirection(Direction.LEFT);
+                    break;
+                case RIGHT,D:
+                    snake.setDirection(Direction.RIGHT);
+                    break;
+            }
+        });
+
         stage.setScene(scene);
 
         drawGame();

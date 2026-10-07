@@ -21,8 +21,24 @@ public class Snake {
         return direction;
     }
 
-    public void setDirection(Direction direction) {
-        this.direction = direction;
+    public void setDirection(Direction newDirection) {
+
+        if ( direction == Direction.RIGHT && newDirection == Direction.LEFT) {
+            return;
+        }
+
+        if ( direction == Direction.LEFT && newDirection == Direction.RIGHT) {
+            return;
+        }
+
+        if ( direction == Direction.UP && newDirection == Direction.DOWN) {
+            return;
+        }
+
+        if ( direction == Direction.DOWN && newDirection == Direction.UP) {
+            return;
+        }
+        direction = newDirection;
     }
 
 
@@ -32,7 +48,26 @@ public class Snake {
 
     public void move(){
         Point head = body.getFirst();
-        Point newHead = new Point(head.getX() + 1, head.getY());
+
+        int newX = head.getX();
+        int newY = head.getY();
+
+        switch(direction){
+            case RIGHT:
+                newX += 1;
+                break;
+            case LEFT:
+                newX -= 1;
+                break;
+            case DOWN:
+                newY += 1;
+                break;
+            case UP:
+                newY -= 1;
+                break;
+        }
+
+        Point newHead = new Point(newX, newY);
         body.addFirst(newHead);
         body.removeLast();
     }
