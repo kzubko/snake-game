@@ -35,6 +35,9 @@ public class Main extends Application {
     private Food food;
     private int score;
     private Label scoreLabel;
+    private int level = 1;
+    private Label levelLabel;
+    private double delay = 200;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -57,33 +60,7 @@ public class Main extends Application {
 
         drawGame();
 
-
-        timeline = new Timeline(
-                new KeyFrame(Duration.millis(200), event -> {
-
-                    Point nextHead = snake.getNextHead();
-                    Point foodPos = food.getPosition();
-
-                    boolean eatsFood = nextHead.getX() == foodPos.getX() && nextHead.getY() == foodPos.getY();
-
-                    snake.move(eatsFood);
-
-                    if (eatsFood) {
-                        food.generatePosition(GRID_SIZE, snake.getBody());
-                        score += 10;
-                        scoreLabel.setText("Score: " + score);
-                    }
-
-                    if (snake.hitWall(GRID_SIZE) || snake.hitItself()){
-                        timeline.stop();
-                        gameOver();
-                    } else {
-                        drawGame();
-                    }
-                })
-        );
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
+        startGame(200);
 
         stage.show();
     }
@@ -91,9 +68,15 @@ public class Main extends Application {
     private Scene getScene() {
 
         scoreLabel = new Label("Score: " + score);
+        levelLabel = new Label("Level: " + level);
+
+        levelLabel.setMaxWidth(Double.MAX_VALUE);
 
         Button newGameButton = new Button("New Game");
         Button exitButton = new Button("Exit");
+
+        newGameButton.setPrefWidth(120);
+        exitButton.setPrefWidth(120);
 
         Region leftSpacer = new Region();
         Region rightSpacer = new Region();
@@ -109,13 +92,15 @@ public class Main extends Application {
                 );
 
         topBar.setStyle(
-                "-fx-background-color: black;"
+                "-fx-background-color: black;" +
+                "-fx-border-color: transparent transparent white transparent;" +
+                "-fx-border-width: 0 0 0.5px 0;"
         );
 
         topBar.setAlignment(Pos.CENTER);
         topBar.setPadding(new Insets(8));
 
-        VBox root = new VBox(topBar, canvas);
+        VBox root = new VBox(topBar, levelLabel, canvas);
         Scene scene = new Scene(root);
 
         scoreLabel.setStyle(
@@ -123,6 +108,16 @@ public class Main extends Application {
                         "-fx-font-family: Inter;" +
                         "-fx-font-size: 24px;" +
                         "-fx-font-weight: bold;"
+        );
+
+        levelLabel.setStyle(
+                "-fx-background-color: black;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-family: Inter;" +
+                        "-fx-font-size: 18px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-alignment: center;" +
+                        "-fx-padding: 8px;"
         );
 
         String buttonStyle =
@@ -218,24 +213,75 @@ public class Main extends Application {
 
     public void gameOver() {
 
-        double boxWidth = 400;
-        double boxHeight = 180;
-
-        double x = (SIZE - boxWidth) / 2.0;
-        double y = (SIZE - boxHeight) / 2.0;
+//        double boxWidth = 400;
+//        double boxHeight = 180;
+//
+//        double x = (SIZE - boxWidth) / 2.0;
+//        double y = (SIZE - boxHeight) / 2.0;
 
         //gc.setGlobalAlpha(0.85);
         //gc.setFill(Color.web("#CBF2E6"));
 
         //gc.fillRoundRect(x, y, boxWidth, boxHeight, 30, 30);
 
-        gc.setGlobalAlpha(1.0);
+        //gc.setGlobalAlpha(1.0);
 
         gc.setTextAlign(TextAlignment.CENTER);
 
         gc.setFont(Font.font("Inter", FontWeight.BOLD, 48));
         gc.setFill(Color.web("#B5093B"));
         gc.fillText("Game Over", SIZE / 2.0, SIZE / 2.0);
+    }
+
+    private void startGame(double delay) {
+
+        if ( timeline != null ) {
+            timeline.stop();
+        }
+
+        timeline = new Timeline(
+                new KeyFrame(Duration.millis(delay), event -> {
+
+                    Point nextHead = snake.getNextHead();
+                    Point foodPos = food.getPosition();
+
+                    boolean eatsFood = nextHead.getX() == foodPos.getX() && nextHead.getY() == foodPos.getY();
+
+                    snake.move(eatsFood);
+
+                    if (eatsFood) {
+                        food.generatePosition(GRID_SIZE, snake.getBody());
+                        score += 10;
+                        scoreLabel.setText("Score: " + score);
+
+                        if (score % 50 == 0) {
+
+                            if (delay <= 40) {
+                                drawGame();
+                                timeline.stop();
+                                winGame();
+                                return;
+                            }
+                            level++;
+                            levelLabel.setText("Level: " + level);
+
+                            this.delay -= 20;
+                            startGame(this.delay);
+                        }
+                    }
+
+                    if (snake.hitWall(GRID_SIZE) || snake.hitItself()){
+                        timeline.stop();
+                        gameOver();
+                    } else {
+                        drawGame();
+                    }
+                })
+        );
+
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+
     }
 
     private void restartGame() {
@@ -246,11 +292,25 @@ public class Main extends Application {
         score = 0;
         scoreLabel.setText("Score: " + score);
 
+        level = 1;
+        levelLabel.setText("Level: " + level);
+
+        delay = 200;
+
         food.generatePosition(GRID_SIZE, snake.getBody());
 
         drawGame();
 
-        timeline.play();
+        startGame(delay);
+    }
+
+    public void winGame() {
+
+        gc.setTextAlign(TextAlignment.CENTER);
+
+        gc.setFont(Font.font("Inter", FontWeight.BOLD, 48));
+        gc.setFill(Color.web("#E8F3FF"));
+        gc.fillText("You Won !", SIZE / 2.0, SIZE / 2.0);
     }
 
     public static void main(String[] args) {
