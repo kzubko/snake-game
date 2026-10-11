@@ -59,7 +59,7 @@ public class Main extends Application {
                         food.generatePosition(GRID_SIZE, snake.getBody());
                     }
 
-                    if (snake.hitWall(GRID_SIZE)){
+                    if (snake.hitWall(GRID_SIZE) || snake.hitItself()){
                         timeline.stop();
                         gameOver();
                     } else {

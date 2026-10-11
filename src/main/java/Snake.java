@@ -86,4 +86,17 @@ public class Snake {
         return head.getX() < 0 || head.getX() >= gridSize || head.getY() < 0 || head.getY() >= gridSize;
     }
 
+    public boolean hitItself(){
+        Point head = body.getFirst();
+
+        for (int i = 1; i < body.size(); i++) {
+            Point part = body.get(i);
+
+            if (head.getX() == part.getX() && head.getY() == part.getY()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
