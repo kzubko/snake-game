@@ -2,7 +2,8 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.control.Label;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.animation.KeyFrame;
@@ -14,7 +15,7 @@ import javafx.scene.text.TextAlignment;
 
 public class Main extends Application {
 
-    private static final int GRID_SIZE = 25;
+    private static final int GRID_SIZE = 20;
     private static final int CELL_SIZE = 30;
     private static final int SIZE = GRID_SIZE * CELL_SIZE;
     private static final int SNAKE_PADDING = 3;
@@ -24,6 +25,8 @@ public class Main extends Application {
     private GraphicsContext gc;
     private Timeline timeline;
     private Food food;
+    private int score;
+    private Label scoreLabel;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -57,6 +60,8 @@ public class Main extends Application {
 
                     if (eatsFood) {
                         food.generatePosition(GRID_SIZE, snake.getBody());
+                        score += 10;
+                        scoreLabel.setText("Score: " + score);
                     }
 
                     if (snake.hitWall(GRID_SIZE) || snake.hitItself()){
@@ -74,7 +79,24 @@ public class Main extends Application {
     }
 
     private Scene getScene() {
-        StackPane root = new StackPane(canvas);
+
+        scoreLabel = new Label("Score: " + score);
+
+        scoreLabel.setMaxWidth(Double.MAX_VALUE);
+        scoreLabel.setStyle(
+                "-fx-background-color: black;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 24px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-alignment: center;" +
+                        "-fx-padding: 10px;"
+        );
+
+        return getScene1();
+    }
+
+    private Scene getScene1() {
+        VBox root = new VBox(scoreLabel, canvas);
         Scene scene = new Scene(root);
 
         scene.setOnKeyPressed(event -> {
