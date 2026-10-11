@@ -1,11 +1,19 @@
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.Button;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.Priority;
 import javafx.scene.control.Label;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.input.KeyCode;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
@@ -21,6 +29,7 @@ public class Main extends Application {
     private static final int SNAKE_PADDING = 3;
 
     private Snake snake;
+    private Stage stage;
     private Canvas canvas;
     private GraphicsContext gc;
     private Timeline timeline;
@@ -30,6 +39,8 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+
+        this.stage = stage;
 
         stage.setTitle("Snake Game");
 
@@ -82,24 +93,59 @@ public class Main extends Application {
 
         scoreLabel = new Label("Score: " + score);
 
-        scoreLabel.setMaxWidth(Double.MAX_VALUE);
-        scoreLabel.setStyle(
-                "-fx-background-color: black;" +
-                        "-fx-text-fill: white;" +
-                        "-fx-font-size: 24px;" +
-                        "-fx-font-weight: bold;" +
-                        "-fx-alignment: center;" +
-                        "-fx-padding: 10px;"
+        Button newGameButton = new Button("New Game");
+        Button exitButton = new Button("Exit");
+
+        Region leftSpacer = new Region();
+        Region rightSpacer = new Region();
+
+        HBox.setHgrow(leftSpacer, Priority.ALWAYS);
+        HBox.setHgrow(rightSpacer, Priority.ALWAYS);
+
+        HBox topBar = new HBox(newGameButton,
+                leftSpacer,
+                scoreLabel,
+                rightSpacer,
+                exitButton
+                );
+
+        topBar.setStyle(
+                "-fx-background-color: black;"
         );
 
-        return getScene1();
-    }
+        topBar.setAlignment(Pos.CENTER);
+        topBar.setPadding(new Insets(8));
 
-    private Scene getScene1() {
-        VBox root = new VBox(scoreLabel, canvas);
+        VBox root = new VBox(topBar, canvas);
         Scene scene = new Scene(root);
 
-        scene.setOnKeyPressed(event -> {
+        scoreLabel.setStyle(
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 24px;" +
+                        "-fx-font-weight: bold;"
+        );
+
+        String buttonStyle =
+                "-fx-background-color: #2b2b2b;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-background-radius: 8;" +
+                        "-fx-padding: 8px 14px;";
+
+        newGameButton.setStyle(buttonStyle);
+        exitButton.setStyle(buttonStyle);
+
+        newGameButton.setOnAction(e -> {
+            restartGame();
+        });
+
+        exitButton.setOnAction(e -> {
+            stage.close();
+        });
+
+
+
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, (KeyEvent event) -> {
             switch (event.getCode()) {
                 case UP, W:
                     snake.setDirection(Direction.UP);
@@ -115,6 +161,7 @@ public class Main extends Application {
                     break;
             }
         });
+
         return scene;
     }
 
@@ -185,6 +232,21 @@ public class Main extends Application {
         gc.setFont(Font.font("Arial", FontWeight.BOLD, 48));
         gc.setFill(Color.RED);
         gc.fillText("Game Over", SIZE / 2.0, SIZE / 2.0);
+    }
+
+    private void restartGame() {
+        timeline.stop();
+
+        snake = new Snake();
+
+        score = 0;
+        scoreLabel.setText("Score: " + score);
+
+        food.generatePosition(GRID_SIZE, snake.getBody());
+
+        drawGame();
+
+        timeline.play();
     }
 
     public static void main(String[] args) {
