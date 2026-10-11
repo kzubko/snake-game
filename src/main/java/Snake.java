@@ -9,9 +9,9 @@ public class Snake {
     public Snake() {
         body = new ArrayList<Point>();
 
-        body.add(new Point(12, 12));
-        body.add(new Point(11, 12));
-        body.add(new Point(10, 12));
+        body.add(new Point(10, 8));
+        body.add(new Point(9, 8));
+        body.add(new Point(8, 8));
 
         direction = Direction.RIGHT;
 

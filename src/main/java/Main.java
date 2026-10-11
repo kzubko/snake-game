@@ -13,7 +13,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-import javafx.scene.input.KeyCode;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
@@ -23,8 +22,8 @@ import javafx.scene.text.TextAlignment;
 
 public class Main extends Application {
 
-    private static final int GRID_SIZE = 20;
-    private static final int CELL_SIZE = 30;
+    private static final int GRID_SIZE = 18;
+    private static final int CELL_SIZE = 33;
     private static final int SIZE = GRID_SIZE * CELL_SIZE;
     private static final int SNAKE_PADDING = 3;
 
@@ -121,6 +120,7 @@ public class Main extends Application {
 
         scoreLabel.setStyle(
                         "-fx-text-fill: white;" +
+                        "-fx-font-family: Inter;" +
                         "-fx-font-size: 24px;" +
                         "-fx-font-weight: bold;"
         );
@@ -129,8 +129,10 @@ public class Main extends Application {
                 "-fx-background-color: #2b2b2b;" +
                         "-fx-text-fill: white;" +
                         "-fx-font-weight: bold;" +
+                        "-fx-font-size: 16px;" +
                         "-fx-background-radius: 8;" +
-                        "-fx-padding: 8px 14px;";
+                        "-fx-padding: 8px 18px;" +
+                        "-fx-font-family: Inter;";
 
         newGameButton.setStyle(buttonStyle);
         exitButton.setStyle(buttonStyle);
@@ -171,12 +173,14 @@ public class Main extends Application {
         gc.fillRect(0, 0, SIZE, SIZE);
 
         gc.setStroke(Color.WHITE);
-        gc.setLineWidth(0.2);
+        gc.setLineWidth(0.5);
 
-        for (int i = 0; i <= SIZE; i += CELL_SIZE) {
-            gc.strokeLine(i, 0, i, SIZE);
-            gc.strokeLine(0, i, SIZE, i);
-        }
+        gc.strokeLine(0, 0, SIZE, 0);
+
+//        for (int i = 0; i <= SIZE; i += CELL_SIZE) {
+//            gc.strokeLine(i, 0, i, SIZE);
+//            gc.strokeLine(0, i, SIZE, i);
+//        }
 
         for (int i = 0; i < snake.getBody().size(); i++) {
             Point point = snake.getBody().get(i);
@@ -185,10 +189,10 @@ public class Main extends Application {
             int y = point.getY() * CELL_SIZE;
 
             if ( i == 0 ) {
-                gc.setFill(Color.DARKRED);
+                gc.setFill(Color.web("#00D99A"));
                 gc.fillOval(x + 3, y + 3, CELL_SIZE - 6, CELL_SIZE - 6);
             } else {
-                gc.setFill(Color.RED);
+                gc.setFill(Color.web("#00966F"));
                 gc.fillRoundRect(x + SNAKE_PADDING,
                         y + SNAKE_PADDING,
                         CELL_SIZE - SNAKE_PADDING * 2,
@@ -200,7 +204,7 @@ public class Main extends Application {
         }
 
         Point foodPos = food.getPosition();
-        gc.setFill(Color.GREEN);
+        gc.setFill(Color.web("#D414FF"));
 
         int x = foodPos.getX() * CELL_SIZE;
         int y = foodPos.getY() * CELL_SIZE;
@@ -220,17 +224,17 @@ public class Main extends Application {
         double x = (SIZE - boxWidth) / 2.0;
         double y = (SIZE - boxHeight) / 2.0;
 
-        gc.setGlobalAlpha(0.85);
-        gc.setFill(Color.DARKGRAY);
+        //gc.setGlobalAlpha(0.85);
+        //gc.setFill(Color.web("#CBF2E6"));
 
-        gc.fillRoundRect(x, y, boxWidth, boxHeight, 30, 30);
+        //gc.fillRoundRect(x, y, boxWidth, boxHeight, 30, 30);
 
         gc.setGlobalAlpha(1.0);
 
         gc.setTextAlign(TextAlignment.CENTER);
 
-        gc.setFont(Font.font("Arial", FontWeight.BOLD, 48));
-        gc.setFill(Color.RED);
+        gc.setFont(Font.font("Inter", FontWeight.BOLD, 48));
+        gc.setFill(Color.web("#B5093B"));
         gc.fillText("Game Over", SIZE / 2.0, SIZE / 2.0);
     }
 
