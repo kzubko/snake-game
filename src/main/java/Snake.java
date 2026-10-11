@@ -5,6 +5,7 @@ public class Snake {
 
     private final List<Point> body;
     private Direction direction;
+    private boolean directionChanged = false;
 
     public Snake() {
         body = new ArrayList<Point>();
@@ -23,6 +24,10 @@ public class Snake {
 
     public void setDirection(Direction newDirection) {
 
+        if ( directionChanged) {
+            return;
+        }
+
         if ( direction == Direction.RIGHT && newDirection == Direction.LEFT) {
             return;
         }
@@ -38,7 +43,9 @@ public class Snake {
         if ( direction == Direction.DOWN && newDirection == Direction.UP) {
             return;
         }
+
         direction = newDirection;
+        directionChanged = true;
     }
 
 
@@ -54,6 +61,8 @@ public class Snake {
         if (!grow) {
             body.removeLast();
         }
+
+        directionChanged = false;
     }
 
     public Point getNextHead() {
