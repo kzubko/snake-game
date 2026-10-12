@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 public class Main extends Application {
 
@@ -111,31 +112,12 @@ public class Main extends Application {
                 levelLabel,
                 rightSpacer,
                 exitButton
-                );
-
-        topBar.setStyle(
-                "-fx-background-color: black;" +
-                "-fx-border-color: transparent transparent white transparent;" +
-                "-fx-border-width: 0 0 0.5px 0;"
         );
 
         HBox bottomBar = new HBox(
                 scoreBox,
                 middleSpacer,
                 bestBox
-        );
-
-        bottomBar.setStyle(
-                "-fx-background-color: black;"
-        );
-
-        resetButton.setStyle(
-                " -fx-background-color: transparent;" +
-                        "    -fx-text-fill: white;" +
-                        "    -fx-font-size: 12px;" +
-                        "    -fx-padding: 0;" +
-                        "    -fx-cursor: hand;" +
-                        "-fx-underline: true;"
         );
 
         topBar.setAlignment(Pos.CENTER);
@@ -148,32 +130,21 @@ public class Main extends Application {
 
         Scene scene = new Scene(root);
 
-        String bottomStyle = "-fx-text-fill: white;" +
-                "-fx-font-family: Inter;" +
-                "-fx-font-size: 24px;" +
-                "-fx-font-weight: bold;";
-
-        scoreLabel.setStyle(bottomStyle);
-        bestScore.setStyle(bottomStyle);
-
-        levelLabel.setStyle(
-                        "-fx-text-fill: white;" +
-                        "-fx-font-family: Inter;" +
-                        "-fx-font-size: 22px;" +
-                        "-fx-font-weight: bold;"
+        scene.getStylesheets().add(
+                Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm()
         );
 
-        String buttonStyle =
-                "-fx-background-color: #2b2b2b;" +
-                        "-fx-text-fill: white;" +
-                        "-fx-font-weight: bold;" +
-                        "-fx-font-size: 16px;" +
-                        "-fx-background-radius: 8;" +
-                        "-fx-padding: 8px 18px;" +
-                        "-fx-font-family: Inter;";
+        scoreLabel.getStyleClass().add("bottom-style");
+        bestScore.getStyleClass().add("bottom-style");
 
-        newGameButton.setStyle(buttonStyle);
-        exitButton.setStyle(buttonStyle);
+        levelLabel.getStyleClass().add("level-label-style");
+
+        newGameButton.getStyleClass().add("game-button-style");
+        exitButton.getStyleClass().add("game-button-style");
+        resetButton.getStyleClass().add("reset-button-style");
+
+        topBar.getStyleClass().add("top-bar-style");
+        bottomBar.getStyleClass().add("bottom-bar-style");
 
         newGameButton.setOnAction(e -> {
             restartGame();
