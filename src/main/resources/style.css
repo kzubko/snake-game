@@ -40,3 +40,13 @@
 .bottom-bar-style {
     -fx-background-color: black;
 }
+
+.start-button-style {
+    -fx-background-color: #B00FD1;
+    -fx-text-fill: #DBDBDB;
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+    -fx-padding: 15px 40px;
+    -fx-background-radius: 14px;
+    -fx-cursor: hand;
+}

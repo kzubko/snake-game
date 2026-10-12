@@ -1,13 +1,10 @@
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.Priority;
 import javafx.scene.control.Label;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -49,6 +46,8 @@ public class Main extends Application {
     private double delay = 200;
     private Label bestScore;
     private int highScore;
+    private boolean gameStarted = false;
+    private Button startButton;
 
 
     @Override
@@ -70,8 +69,6 @@ public class Main extends Application {
         stage.setScene(scene);
 
         drawGame();
-        startGame(200);
-
         stage.show();
     }
 
@@ -82,7 +79,18 @@ public class Main extends Application {
         HBox topBar = createTopBar();
         HBox bottomBar = createBottomBar();
 
-        VBox root = new VBox(topBar, bottomBar, canvas);
+        startButton = new Button("START");
+        startButton.getStyleClass().add("start-button-style");
+
+        StackPane gamePane = new StackPane(canvas, startButton);
+
+        startButton.setOnAction(e -> {
+            startButton.setVisible(false);
+            gameStarted = true;
+            startGame(delay);
+        });
+
+        VBox root = new VBox(topBar, bottomBar, gamePane);
 
         Scene scene = new Scene(root);
 
@@ -391,7 +399,8 @@ public class Main extends Application {
 
         drawGame();
 
-        startGame(delay);
+        gameStarted = false;
+        startButton.setVisible(true);
     }
 
     public void winGame() {
