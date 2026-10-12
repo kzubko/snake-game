@@ -19,6 +19,13 @@ import javafx.util.Duration;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class Main extends Application {
 
@@ -26,6 +33,7 @@ public class Main extends Application {
     private static final int CELL_SIZE = 33;
     private static final int SIZE = GRID_SIZE * CELL_SIZE;
     private static final int SNAKE_PADDING = 3;
+    private static final String HIGH_SCORE_FILE = System.getProperty("user.home") + "/.snake-game/highscore.txt";
 
     private Snake snake;
     private Stage stage;
@@ -38,6 +46,9 @@ public class Main extends Application {
     private int level = 1;
     private Label levelLabel;
     private double delay = 200;
+    private Label bestScore;
+    private int highScore;
+
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -67,13 +78,15 @@ public class Main extends Application {
 
     private Scene getScene() {
 
+        loadHighScore();
+
         scoreLabel = new Label("Score: " + score);
         levelLabel = new Label("Level: " + level);
-
-        levelLabel.setMaxWidth(Double.MAX_VALUE);
+        bestScore = new Label("Best Score: " + highScore);
 
         Button newGameButton = new Button("New Game");
         Button exitButton = new Button("Exit");
+        Button resetButton = new Button("reset");
 
         newGameButton.setPrefWidth(120);
         exitButton.setPrefWidth(120);
@@ -81,12 +94,21 @@ public class Main extends Application {
         Region leftSpacer = new Region();
         Region rightSpacer = new Region();
 
+        Region middleSpacer = new Region();
+
+        VBox bestBox = new VBox(bestScore, resetButton);
+        bestBox.setAlignment(Pos.TOP_RIGHT);
+
+        VBox scoreBox = new VBox(scoreLabel);
+        scoreBox.setAlignment(Pos.TOP_LEFT);
+
         HBox.setHgrow(leftSpacer, Priority.ALWAYS);
         HBox.setHgrow(rightSpacer, Priority.ALWAYS);
+        HBox.setHgrow(middleSpacer, Priority.ALWAYS);
 
         HBox topBar = new HBox(newGameButton,
                 leftSpacer,
-                scoreLabel,
+                levelLabel,
                 rightSpacer,
                 exitButton
                 );
@@ -97,27 +119,48 @@ public class Main extends Application {
                 "-fx-border-width: 0 0 0.5px 0;"
         );
 
+        HBox bottomBar = new HBox(
+                scoreBox,
+                middleSpacer,
+                bestBox
+        );
+
+        bottomBar.setStyle(
+                "-fx-background-color: black;"
+        );
+
+        resetButton.setStyle(
+                " -fx-background-color: transparent;" +
+                        "    -fx-text-fill: white;" +
+                        "    -fx-font-size: 12px;" +
+                        "    -fx-padding: 0;" +
+                        "    -fx-cursor: hand;" +
+                        "-fx-underline: true;"
+        );
+
         topBar.setAlignment(Pos.CENTER);
         topBar.setPadding(new Insets(8));
 
-        VBox root = new VBox(topBar, levelLabel, canvas);
+        bottomBar.setAlignment(Pos.CENTER);
+        bottomBar.setPadding(new Insets(8));
+
+        VBox root = new VBox(topBar, bottomBar, canvas);
+
         Scene scene = new Scene(root);
 
-        scoreLabel.setStyle(
-                        "-fx-text-fill: white;" +
-                        "-fx-font-family: Inter;" +
-                        "-fx-font-size: 24px;" +
-                        "-fx-font-weight: bold;"
-        );
+        String bottomStyle = "-fx-text-fill: white;" +
+                "-fx-font-family: Inter;" +
+                "-fx-font-size: 24px;" +
+                "-fx-font-weight: bold;";
+
+        scoreLabel.setStyle(bottomStyle);
+        bestScore.setStyle(bottomStyle);
 
         levelLabel.setStyle(
-                "-fx-background-color: black;" +
                         "-fx-text-fill: white;" +
                         "-fx-font-family: Inter;" +
-                        "-fx-font-size: 18px;" +
-                        "-fx-font-weight: bold;" +
-                        "-fx-alignment: center;" +
-                        "-fx-padding: 8px;"
+                        "-fx-font-size: 22px;" +
+                        "-fx-font-weight: bold;"
         );
 
         String buttonStyle =
@@ -138,6 +181,22 @@ public class Main extends Application {
 
         exitButton.setOnAction(e -> {
             stage.close();
+        });
+
+        resetButton.setOnAction(e -> {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+
+            alert.setTitle("Reset Best Score");
+            alert.setHeaderText("Reset Best Score?");
+            alert.setContentText("Are you sure you want to reset the best score?");
+
+            alert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    highScore = 0;
+                    bestScore.setText("Best Score: " + highScore);
+                    saveHighScore();
+                }
+            });
         });
 
 
@@ -213,16 +272,16 @@ public class Main extends Application {
 
     public void gameOver() {
 
-//        double boxWidth = 400;
-//        double boxHeight = 180;
-//
-//        double x = (SIZE - boxWidth) / 2.0;
-//        double y = (SIZE - boxHeight) / 2.0;
+        double boxWidth = 350;
+        double boxHeight = 100;
+
+        double x = (SIZE - boxWidth) / 2.0;
+        double y = (SIZE - boxHeight) / 2.0;
 
         //gc.setGlobalAlpha(0.85);
-        //gc.setFill(Color.web("#CBF2E6"));
+        gc.setFill(Color.BLACK);
 
-        //gc.fillRoundRect(x, y, boxWidth, boxHeight, 30, 30);
+        gc.fillRect(x, y, boxWidth, boxHeight);
 
         //gc.setGlobalAlpha(1.0);
 
@@ -253,6 +312,12 @@ public class Main extends Application {
                         food.generatePosition(GRID_SIZE, snake.getBody());
                         score += 10;
                         scoreLabel.setText("Score: " + score);
+
+                        if (score > highScore) {
+                            highScore = score;
+                            bestScore.setText("Best Score: " + highScore);
+                            saveHighScore();
+                        }
 
                         if (score % 50 == 0) {
 
@@ -311,6 +376,33 @@ public class Main extends Application {
         gc.setFont(Font.font("Inter", FontWeight.BOLD, 48));
         gc.setFill(Color.web("#E8F3FF"));
         gc.fillText("You Won !", SIZE / 2.0, SIZE / 2.0);
+    }
+
+    private void loadHighScore() {
+        Path path = Paths.get(HIGH_SCORE_FILE);
+
+        try {
+            if (Files.exists(path)) {
+                String text = Files.readString(path);
+                highScore = Integer.parseInt(text.trim());
+            } else {
+                highScore = 0;
+            }
+        } catch (IOException | NumberFormatException e) {
+            highScore = 0;
+        }
+    }
+
+    private void saveHighScore() {
+        Path path = Paths.get(HIGH_SCORE_FILE);
+
+        try {
+            Files.createDirectories(path.getParent());
+            String text = String.valueOf(highScore);
+            Files.writeString(path, text);
+        } catch (IOException e) {
+            System.out.println("Could not save high score.");
+        }
     }
 
     public static void main(String[] args) {
