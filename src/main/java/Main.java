@@ -67,11 +67,9 @@ public class Main extends Application {
 
 
         Scene scene = getScene();
-
         stage.setScene(scene);
 
         drawGame();
-
         startGame(200);
 
         stage.show();
@@ -81,13 +79,30 @@ public class Main extends Application {
 
         loadHighScore();
 
-        scoreLabel = new Label("Score: " + score);
+        HBox topBar = createTopBar();
+        HBox bottomBar = createBottomBar();
+
+        VBox root = new VBox(topBar, bottomBar, canvas);
+
+        Scene scene = new Scene(root);
+
+        loadStyles(scene);
+        setupKeyboard(scene);
+
+        return scene;
+    }
+
+    public void drawGame () {
+        drawBackground();
+        drawSnake();
+        drawFood();
+    }
+
+    private HBox createTopBar() {
         levelLabel = new Label("Level: " + level);
-        bestScore = new Label("Best Score: " + highScore);
 
         Button newGameButton = new Button("New Game");
         Button exitButton = new Button("Exit");
-        Button resetButton = new Button("reset");
 
         newGameButton.setPrefWidth(120);
         exitButton.setPrefWidth(120);
@@ -95,17 +110,8 @@ public class Main extends Application {
         Region leftSpacer = new Region();
         Region rightSpacer = new Region();
 
-        Region middleSpacer = new Region();
-
-        VBox bestBox = new VBox(bestScore, resetButton);
-        bestBox.setAlignment(Pos.TOP_RIGHT);
-
-        VBox scoreBox = new VBox(scoreLabel);
-        scoreBox.setAlignment(Pos.TOP_LEFT);
-
         HBox.setHgrow(leftSpacer, Priority.ALWAYS);
         HBox.setHgrow(rightSpacer, Priority.ALWAYS);
-        HBox.setHgrow(middleSpacer, Priority.ALWAYS);
 
         HBox topBar = new HBox(newGameButton,
                 leftSpacer,
@@ -114,37 +120,15 @@ public class Main extends Application {
                 exitButton
         );
 
-        HBox bottomBar = new HBox(
-                scoreBox,
-                middleSpacer,
-                bestBox
-        );
-
         topBar.setAlignment(Pos.CENTER);
         topBar.setPadding(new Insets(8));
-
-        bottomBar.setAlignment(Pos.CENTER);
-        bottomBar.setPadding(new Insets(8));
-
-        VBox root = new VBox(topBar, bottomBar, canvas);
-
-        Scene scene = new Scene(root);
-
-        scene.getStylesheets().add(
-                Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm()
-        );
-
-        scoreLabel.getStyleClass().add("bottom-style");
-        bestScore.getStyleClass().add("bottom-style");
 
         levelLabel.getStyleClass().add("level-label-style");
 
         newGameButton.getStyleClass().add("game-button-style");
         exitButton.getStyleClass().add("game-button-style");
-        resetButton.getStyleClass().add("reset-button-style");
 
         topBar.getStyleClass().add("top-bar-style");
-        bottomBar.getStyleClass().add("bottom-bar-style");
 
         newGameButton.setOnAction(e -> {
             restartGame();
@@ -154,24 +138,72 @@ public class Main extends Application {
             stage.close();
         });
 
+        return topBar;
+    }
+
+    private HBox createBottomBar() {
+        scoreLabel = new Label("Score: " + score);
+        bestScore = new Label("Best Score: " + highScore);
+
+        Button resetButton = new Button("reset");
+
+        Region middleSpacer = new Region();
+
+        VBox bestBox = new VBox(bestScore, resetButton);
+        bestBox.setAlignment(Pos.TOP_RIGHT);
+
+        VBox scoreBox = new VBox(scoreLabel);
+        scoreBox.setAlignment(Pos.TOP_LEFT);
+
+        HBox.setHgrow(middleSpacer, Priority.ALWAYS);
+
+        HBox bottomBar = new HBox(
+                scoreBox,
+                middleSpacer,
+                bestBox
+        );
+
+        bottomBar.setAlignment(Pos.CENTER);
+        bottomBar.setPadding(new Insets(8));
+
+        scoreLabel.getStyleClass().add("bottom-style");
+        bestScore.getStyleClass().add("bottom-style");
+        resetButton.getStyleClass().add("reset-button-style");
+
+        bottomBar.getStyleClass().add("bottom-bar-style");
+
         resetButton.setOnAction(e -> {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-
-            alert.setTitle("Reset Best Score");
-            alert.setHeaderText("Reset Best Score?");
-            alert.setContentText("Are you sure you want to reset the best score?");
-
-            alert.showAndWait().ifPresent(response -> {
-                if (response == ButtonType.OK) {
-                    highScore = 0;
-                    bestScore.setText("Best Score: " + highScore);
-                    saveHighScore();
-                }
-            });
+            confirmReset();
         });
 
+        return bottomBar;
+    }
 
+    private void confirmReset() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
 
+        alert.setTitle("Reset Best Score");
+        alert.setHeaderText("Reset Best Score?");
+        alert.setContentText("Are you sure you want to reset the best score?");
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                highScore = 0;
+                bestScore.setText("Best Score: " + highScore);
+                saveHighScore();
+            }
+        });
+    }
+
+    private void loadStyles (Scene scene) {
+        scene.getStylesheets().add(
+                Objects.requireNonNull(
+                        getClass().getResource("/style.css")
+                ).toExternalForm()
+        );
+    }
+
+    private void setupKeyboard(Scene scene) {
         scene.addEventFilter(KeyEvent.KEY_PRESSED, (KeyEvent event) -> {
             switch (event.getCode()) {
                 case UP, W:
@@ -188,12 +220,9 @@ public class Main extends Application {
                     break;
             }
         });
-
-        return scene;
     }
 
-    public void drawGame () {
-
+    private void drawBackground() {
         gc.setFill(Color.BLACK);
         gc.fillRect(0, 0, SIZE, SIZE);
 
@@ -201,12 +230,9 @@ public class Main extends Application {
         gc.setLineWidth(0.5);
 
         gc.strokeLine(0, 0, SIZE, 0);
+    }
 
-//        for (int i = 0; i <= SIZE; i += CELL_SIZE) {
-//            gc.strokeLine(i, 0, i, SIZE);
-//            gc.strokeLine(0, i, SIZE, i);
-//        }
-
+    private void drawSnake() {
         for (int i = 0; i < snake.getBody().size(); i++) {
             Point point = snake.getBody().get(i);
 
@@ -227,7 +253,9 @@ public class Main extends Application {
             }
 
         }
+    }
 
+    private void drawFood() {
         Point foodPos = food.getPosition();
         gc.setFill(Color.web("#D414FF"));
 
@@ -237,8 +265,8 @@ public class Main extends Application {
         gc.fillOval(x + SNAKE_PADDING,
                 y + SNAKE_PADDING,
                 CELL_SIZE - SNAKE_PADDING * 2,
-                CELL_SIZE - SNAKE_PADDING * 2);
-
+                CELL_SIZE - SNAKE_PADDING * 2
+        );
     }
 
     public void gameOver() {
@@ -271,53 +299,79 @@ public class Main extends Application {
 
         timeline = new Timeline(
                 new KeyFrame(Duration.millis(delay), event -> {
-
-                    Point nextHead = snake.getNextHead();
-                    Point foodPos = food.getPosition();
-
-                    boolean eatsFood = nextHead.getX() == foodPos.getX() && nextHead.getY() == foodPos.getY();
-
-                    snake.move(eatsFood);
-
-                    if (eatsFood) {
-                        food.generatePosition(GRID_SIZE, snake.getBody());
-                        score += 10;
-                        scoreLabel.setText("Score: " + score);
-
-                        if (score > highScore) {
-                            highScore = score;
-                            bestScore.setText("Best Score: " + highScore);
-                            saveHighScore();
-                        }
-
-                        if (score % 50 == 0) {
-
-                            if (delay <= 40) {
-                                drawGame();
-                                timeline.stop();
-                                winGame();
-                                return;
-                            }
-                            level++;
-                            levelLabel.setText("Level: " + level);
-
-                            this.delay -= 20;
-                            startGame(this.delay);
-                        }
-                    }
-
-                    if (snake.hitWall(GRID_SIZE) || snake.hitItself()){
-                        timeline.stop();
-                        gameOver();
-                    } else {
-                        drawGame();
-                    }
+                    gameTick();
                 })
         );
 
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
 
+    }
+
+    private void gameTick() {
+        Point nextHead = snake.getNextHead();
+        Point foodPos = food.getPosition();
+
+        boolean eatsFood =
+                nextHead.getX() == foodPos.getX()
+                        && nextHead.getY() == foodPos.getY();
+
+        snake.move(eatsFood);
+
+        if (eatsFood && handleFood()) {
+            return;
+        }
+
+        checkGameOver();
+    }
+
+    private boolean handleFood() {
+        food.generatePosition(GRID_SIZE, snake.getBody());
+
+        score += 10;
+        scoreLabel.setText("Score: " + score);
+
+        updateHighScore();
+
+        return updateLevel();
+    }
+
+    private void updateHighScore() {
+        if (score > highScore) {
+            highScore = score;
+            bestScore.setText("Best Score: " + highScore);
+            saveHighScore();
+        }
+    }
+
+    private boolean updateLevel() {
+        if (score % 50 != 0) {
+            return false;
+        }
+
+        if (delay <= 40) {
+            drawGame();
+            timeline.stop();
+            winGame();
+            return true;
+        }
+
+        level++;
+        levelLabel.setText("Level: " + level);
+
+        delay -= 20;
+        startGame(delay);
+
+        return false;
+    }
+
+    private void checkGameOver() {
+        if (snake.hitWall(GRID_SIZE) || snake.hitItself()) {
+            timeline.stop();
+            gameOver();
+        } else {
+            drawGame();
+        }
     }
 
     private void restartGame() {
