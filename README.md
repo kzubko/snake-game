@@ -35,10 +35,12 @@ The project was created as a practical Java project to build a complete desktop 
 
 ## Download
 
-Download the latest release from GitHub Releases:
+## Download
 
-- Windows: `.exe`
-- Linux: `.deb`
+Download the latest release from [GitHub Releases](https://github.com/kzubko/snake-game/releases/latest):
+
+- [Windows `.exe`](https://github.com/kzubko/snake-game/releases/latest)
+- [Linux `.deb`](https://github.com/kzubko/snake-game/releases/latest)
 
 ## Run from Source
 
