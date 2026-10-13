@@ -28,6 +28,7 @@ jobs:
 
       - name: Prepare package input
         run: |
+          rm -rf package-input
           mkdir package-input
           cp target/snake-game-1.0-SNAPSHOT.jar package-input/
           cp target/libs/*.jar package-input/
