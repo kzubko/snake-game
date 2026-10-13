@@ -18,8 +18,11 @@ jobs:
           java-version: '21'
           cache: maven
 
-      - name: Install WiX Toolset
-        run: choco install wixtoolset --version=3.14.1 -y
+      - name: Check WiX
+        shell: powershell
+        run: |
+          candle.exe -?
+          light.exe -?
 
       - name: Build with Maven
         run: mvn --batch-mode clean package
