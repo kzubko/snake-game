@@ -1,0 +1,174 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Run tests
+        run: mvn --batch-mode clean test
+
+
+  build-linux:
+    needs: test
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fakeroot
+
+      - name: Build with Maven
+        run: mvn --batch-mode clean package
+
+      - name: Prepare package input
+        run: |
+          rm -rf package-input
+          mkdir package-input
+          cp target/snake-game-1.0-SNAPSHOT.jar package-input/
+          cp target/libs/*.jar package-input/
+
+      - name: Build DEB package
+        run: |
+          rm -rf dist
+          mkdir dist
+
+          jpackage \
+            --type deb \
+            --name SnakeGame \
+            --input package-input \
+            --main-jar snake-game-1.0-SNAPSHOT.jar \
+            --main-class Launcher \
+            --icon src/main/resources/icon.png \
+            --dest dist \
+            --linux-shortcut \
+            --linux-menu-group Games
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: SnakeGame-Linux
+          path: dist/*.deb
+          if-no-files-found: error
+
+
+  build-windows:
+    needs: test
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Check WiX
+        shell: powershell
+        run: |
+          candle.exe -?
+          light.exe -?
+
+      - name: Build with Maven
+        run: mvn --batch-mode clean package
+
+      - name: Prepare package input
+        shell: powershell
+        run: |
+          Remove-Item package-input -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory package-input
+
+          Copy-Item target\snake-game-1.0-SNAPSHOT.jar package-input\
+          Copy-Item target\libs\*.jar package-input\
+
+      - name: Build EXE installer
+        shell: powershell
+        run: |
+          Remove-Item dist -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory dist
+
+          jpackage `
+            --type exe `
+            --name SnakeGame `
+            --input package-input `
+            --main-jar snake-game-1.0-SNAPSHOT.jar `
+            --main-class Launcher `
+            --icon src\main\resources\icon.ico `
+            --dest dist `
+            --win-menu `
+            --win-shortcut `
+            --win-dir-chooser
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: SnakeGame-Windows
+          path: dist/*.exe
+          if-no-files-found: error
+
+
+  release:
+    needs:
+      - build-linux
+      - build-windows
+
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: SnakeGame-Linux
+          path: release-files
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: SnakeGame-Windows
+          path: release-files
+
+      - name: Show release files
+        run: ls -lah release-files
+
+      - name: Create GitHub Release
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            release-files/* \
+            --repo "${{ github.repository }}" \
+            --title "Snake Game ${{ github.ref_name }}" \
+            --generate-notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
